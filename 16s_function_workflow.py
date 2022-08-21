@@ -107,7 +107,7 @@ class multi_dataset_summariser: # gathers information from datasets to produce a
     def create_success_file(self):
         all_output_dict = {}
         dataset_order_list = []
-        for dataset_name,dataset in self.multi_dataset_obj_dict.items():
+        for dataset_name,dataset in self.multi_dataset_summariser.items():
             dataset_order_list.append(dataset_name)
 
             for output_name,output_val in dataset.summary_outputs.items():
