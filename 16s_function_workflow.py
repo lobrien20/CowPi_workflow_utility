@@ -50,13 +50,6 @@ class workflow_manager:
     def verify_mandatory_configurations(self):
         print("to do")
 
-    def initialise_tools(self):
-        
-        workflow_tools = workflow_tools(self.configuration_dict)
-        summary_tools = summary_tools(self.configuration_dict)
-
-        return workflow_tools, summary_tools
-
     def run_datasets(self):
         
         directory_of_datasets = self.config_dict['directory_of_datasets']
@@ -82,7 +75,7 @@ class workflow_manager:
 class multi_dataset_summariser: # gathers information from datasets to produce as output
 
     def __init__(self, configuration_dict, multi_dataset_obj_dict):
-        self.configuration_dict = configuration_dict
+        self.config_dict = configuration_dict
         self.multi_dataset_summariser = multi_dataset_obj_dict
         self.verify_success_of_all_datasets()
         self.create_success_file()
@@ -97,9 +90,10 @@ class multi_dataset_summariser: # gathers information from datasets to produce a
             if dataset_summary_steps_val < len(summary_workflow_outputs):
                 dataset_summary_steps_val = len(summary_workflow_outputs)
         successful_datasets = []
+        dataset_fail_file = "%s/datasets_failed.txt" % (self.config_dict['directory_of_datasets'])
         with open(dataset_fail_file, "w") as f:
             for dataset_name,dataset_sum_val in dataset_name_success_dict.items():
-                dataset_fail_file = "%s/datasets_failed.txt" % (self.config_dict['directory_of_datasets'])
+                
 
 
                 if dataset_sum_val < dataset_summary_steps_val:
@@ -126,7 +120,7 @@ class multi_dataset_summariser: # gathers information from datasets to produce a
         summary_df = pd.DataFrame.from_dict(all_output_dict)
         summary_df['Dataset'] = dataset_order_list
         summary_df = summary_df.set_index(['Dataset'])
-        final_summary_file = dataset_fail_file = "%s/datasets_summary_file.csv" % (self.config_dict['directory_of_datasets']) 
+        final_summary_file = "%s/datasets_summary_file.csv" % (self.config_dict['directory_of_datasets']) 
         summary_df.to_csv(final_summary_file, sep='\t')
 
 
@@ -332,6 +326,8 @@ class summary_tools:
             if found_both == [True, True]:
 
                 chimera_info_list.append([sample_name, float(total_seq_string), float(chimera_info[0][:-1]), float(chimera_info[1][:-1])])
+
+
         # get an average for bottom of the list
         sum_of_total_seqs = 0
         sum_of_perc_chimeras = 0
@@ -339,20 +335,23 @@ class summary_tools:
         for chimera_info in chimera_info_list:
 
             sum_of_total_seqs += chimera_info[1]
-            sum_of_perc_chimeras = chimera_info[2]
-            sum_of_perc_non_chimeras = chimera_info[3]
+            sum_of_perc_chimeras += chimera_info[2]
+            sum_of_perc_non_chimeras += chimera_info[3]
 
         
-        sums = [sum_of_total_seqs, sum_of_perc_chimeras, sum_of_perc_non_chimeras]
+        sums = [sum_of_total_seqs, sum_of_perc_non_chimeras, sum_of_perc_chimeras]
         mean_list = ['average']
         for sum in sums:
             mean_list.append((sum / len(chimera_info_list)))
         chimera_info_list.append(mean_list)
         
         self.chimera_info_list = chimera_info_list
-        
+
         self.mean_chimera_info = mean_list[1:]
-        self.summary_outputs['Chimera_results'] = mean_list[1:]
+        self.summary_outputs['Average_number_of_initial_reads'] = mean_list[1]
+        self.summary_outputs['Average_percent_non_chimeras'] = mean_list[2]
+        self.summary_outputs['Average_percent_chimeras'] = mean_list[3]
+
 
         return chimera_info_list
 
@@ -362,7 +361,7 @@ class summary_tools:
             fastq_lines = merged_fastq.readlines()
             number_of_reads = len(fastq_lines) / 4
 
-            self.summary_outputs['Number of reads'] = number_of_reads
+            self.summary_outputs['Number_of_reads_after_merging'] = number_of_reads
 
 
     
@@ -371,19 +370,19 @@ class summary_tools:
         with open(cluster_table, "r") as clust_f:
             num_of_clusters = (len(clust_f.readlines()) - 2)
 
-            self.summary_outputs['OTU clusters found'] = num_of_clusters
+            self.summary_outputs['OTU_clusters_found'] = num_of_clusters
         
     def get_alignment_and_filter_summary(self, missing_otus, filtered_table):
 
-        self.summary_outputs['OTU misses'] = len(missing_otus)
 
-        self.summary_outputs['Number of OTU hits'] = self.summary_outputs['OTU clusters found'] - self.summary_outputs['OTU misses']
-        self.summary_outputs['Unique aligned OTUs'] = len(filtered_table.index.tolist())
+
+        self.summary_outputs['Number_of_OTU_aligned'] = self.summary_outputs['OTU_clusters_found'] - len(missing_otus)
+        self.summary_outputs['Unique_aligned_OTUs'] = len(filtered_table.index.tolist())
         
     def get_metagenome_prediction_summary(self, metagenome_predictions_table_path):
         
         pred_df = pd.read_csv(metagenome_predictions_table_path, sep='\t', index_col=[0], header=1)
-        self.summary_outputs['Number of predicted KOs'] = len(pred_df.index.tolist())
+        self.summary_outputs['Number_of_predicted_KOs'] = len(pred_df.index.tolist())
 
     def get_collapsed_pathway_summary(self, collapsed_pathway_dir, ko_pathway_levels):
         
@@ -424,10 +423,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
         normalised_biom = self.normalise_by_copy_number(filtered_biom)  
         self.predict_and_categorise_metagenomes(normalised_biom)
         
-        for output_name,output_val in self.summary_outputs.items():
-            
-            print("%s\t%s" % (output_name, output_val))
-
+        self.get_post_analysis_summary()
 
     def get_sample_names(self):
         sample_paths_without_ext = [".".join(fastq.split(".")[:-1]) for fastq in self.initial_fastq_paths]
@@ -552,12 +548,16 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
 
     def get_post_analysis_summary(self):
         summary_output_file = "%s/summary_output_file.txt" % self.dataset_path
+        output_ordered = ['Average_number_of_initial_reads', 'Average_percent_non_chimeras', 
+        'Average_percent_chimeras', 'Number_of_reads_after_merging', 'OTU_clusters_found', 'Number_of_OTU_aligned', 'Unique_aligned_OTUs', 'Number_of_predicted_KOs', 'Pathways_at_lvl_1', 'Pathways_at_lvl_2', 'Pathways_at_lvl_3', 'Pathways_at_lvl_4']
         with open(summary_output_file, "w") as file:
 
-            for output_name,output_val in self.summary_outputs.items():
+            for output_name in output_ordered:
+                
+                output_val = self.summary_outputs[output_name]
                 output_result = "%s\t%s" % (output_name, output_val)
                 file.write(output_result)
-                print(output_result)
+
 
         print("dataset at %s complete.\nSummary file at %s\n"% (self.dataset_path, summary_output_file) )
 
