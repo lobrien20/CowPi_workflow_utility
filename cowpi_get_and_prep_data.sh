@@ -18,7 +18,6 @@ cowpi_download_array=("https://zenodo.org/record/1252858/files/CowPi_V1.0_16S_pr
 
 for download in "${cowpi_download_array[@]}" # loops over link array, downloads them, gives nice name and decompresses
 do
-    continue
     download_name=$(echo "${download}" | awk -F'/' '{print $NF}' | sed 's/?download=1//')
     download_path="${cowpi_directory}/${download_name}"
     wget "${download}" -O "${download_path}"
