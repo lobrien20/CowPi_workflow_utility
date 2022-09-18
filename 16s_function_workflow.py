@@ -178,8 +178,9 @@ class workflow_tools: # runs workflow on individual datasets
     def cluster_data(self, merged_fastq_path, cluster_output_directory):
         biom_result = "%s/cluster_table.biom" % cluster_output_directory
         centroid_result = "%s/cluster_centroids.fasta" % cluster_output_directory
+        tsv_test_result = "%s/cluster_table_test.tsv" % cluster_output_directory
         vsearch_cluster_args = ['vsearch', '--cluster_size', merged_fastq_path, '--id', '0.97', '--biomout', biom_result, '--centroids', centroid_result]
-
+        vsearch_cluster2_args = ['vsearch', '--cluster_size', merged_fastq_path, '--id', 0]
 
         subprocess.call(vsearch_cluster_args)
 
@@ -191,7 +192,7 @@ class workflow_tools: # runs workflow on individual datasets
         otu_hits_result = "%s/otu_hits.txt" % (alignment_directory)
         otu_miss_result = "%s/otu_miss.txt" % (alignment_directory)
 
-        vsearch_align_args = ['vsearch', '-usearch_global', cluster_centroids, '-db', self.configuration_dict['16s_sequence_table'], '--id', '0.95', '-strand', 'both', '-userout',
+        vsearch_align_args = ['vsearch', '-usearch_global', cluster_centroids, '-db', self.configuration_dict['16s_sequence_table'], '--id', '0.75', '-strand', 'both', '-userout',
         otu_hits_result, '-userfields', 'query+target', '-notmatched', otu_miss_result]
         print(vsearch_align_args)
         subprocess.call(vsearch_align_args, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
