@@ -1,5 +1,4 @@
 #!/usr/bin/bash
-
 yaml_config_output_file=$(realpath "${1}") # command line argument for output yaml configuration file for main script
 cowpi_directory=$(realpath "${2}") # directory for cowpi output results to go
 filter_archaea="${3}" # add a "y" 
@@ -27,7 +26,7 @@ do
 done
 
 
-cat "${cowpi_directory}/CowPi_V1.0_all_rumen_16S_combined.renamed.fas" | sed 's/-//g' > "${cowpi_directory}/CowPi_V1.0_all_rumen_16S_combined.renamed.fas" # removing the "-" to allow vsearch to work
+cat "${cowpi_directory}/CowPi_V1.0_all_rumen_16S_combined.renamed.fas" | sed 's/-//g' > "${cowpi_directory}/CowPi_V1.0_all_rumen_16S_combined.fas" # removing the "-" to allow vsearch to work
 
 # array produced to produce configuration file, then adds the downloads produced above to the specific parts of the configuration file.
 yaml_configs_array=("copy_number_table_file: ${cowpi_directory}/CowPi_V1.0_ko_precalc1.tab" "ko_table: ${cowpi_directory}/CowPi_V1.0_all_rumen_16s_ko_precalc1.tab" 
@@ -40,4 +39,4 @@ do
 
 done
 
-
+rm "${cowpi_directory}/CowPi_V1.0_all_rumen_16S_combined.renamed.fas"
