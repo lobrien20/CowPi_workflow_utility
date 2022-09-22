@@ -34,14 +34,15 @@ def get_specific_cowpi_files(cowpi_file_directory):
         elif "ko_precalc1" in file:
             ko_precalc_file = "%s/%s" % (cowpi_file_directory, file)
             found += 1
-        elif "combined.renamed" in file:
+        elif "16S_combined" in file:
             cowpi_fastas_file = "%s/%s" % (cowpi_file_directory, file)
             found += 1
         else:
             continue
 
     if found != 3:
-        print("Could not find cowpi files. Ensure copy number file, ko precalc file and cowpi fastas file in directory. Exiting.")
+	print("Could not find cowpi files. Ensure copy number file, ko precalc file and cowpi fastas file in directory. Exiting.")
+	print(found)
         exit()
 
     return copy_num_file,ko_precalc_file,cowpi_fastas_file
@@ -134,4 +135,4 @@ def remove_archaea_from_fas(cowpi_fasta_file, archaea_names, archaea_removed_dir
 main()
     
 
-
+print("Done. Please change the yaml config file to point to the new precalculated files found in the archaea removed directory.")

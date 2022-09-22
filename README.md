@@ -4,7 +4,7 @@ Tool used to aid the use of the CowPi tool for analysing 16S data. Run in Python
 
 To create conda environment to run this tool:
 
-conda create -n function_workflow picrust biom-format vsearch pyyaml pandas
+conda create -n cowpi_workflow_env picrust biom-format vsearch pyyaml pandas
 
 
 Contains following scripts:
