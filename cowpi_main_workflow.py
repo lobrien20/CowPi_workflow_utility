@@ -43,7 +43,7 @@ class workflow_manager:
                     else:
 
                         config_dict[key] = value
-        print(config_dict)
+
 
         return config_dict
 
@@ -176,15 +176,13 @@ class workflow_tools: # runs workflow on individual datasets
 
         return merged_fastq_path    
     def cluster_data(self, merged_fastq_path, cluster_output_directory):
-        biom_result = "%s/cluster_table.biom" % cluster_output_directory
+
         centroid_result = "%s/cluster_centroids.fasta" % cluster_output_directory
-        tsv_test_result = "%s/cluster_table_test.tsv" % cluster_output_directory
-        vsearch_cluster_args = ['vsearch', '--cluster_size', merged_fastq_path, '--id', '0.97', '--biomout', biom_result, '--centroids', centroid_result]
-        vsearch_cluster2_args = ['vsearch', '--cluster_size', merged_fastq_path, '--id', 0]
+        tsv_result = "%s/cluster_table_test.tsv" % cluster_output_directory
+        vsearch_cluster2_args = ['vsearch', '--cluster_size', merged_fastq_path, '--id', '0.97', '--threads', str(self.configuration_dict['threads']), '--relabel', 'test', '--otutabout', tsv_result, '--centroids', centroid_result]
 
-        subprocess.call(vsearch_cluster_args)
-
-        return biom_result,centroid_result
+        subprocess.call(vsearch_cluster2_args)
+        return tsv_result,centroid_result
     
 
 
@@ -207,9 +205,9 @@ class workflow_tools: # runs workflow on individual datasets
         return tsv_file
 
 
-    def create_hungate_summarised_table(self, cluster_biom, otu_hits, otu_misses):
+    def create_hungate_summarised_table(self, cluster_tsv, otu_hits, otu_misses):
         
-        cluster_tsv = self.convert_biom_to_tsv(cluster_biom)        
+       # cluster_tsv = self.convert_biom_to_tsv(cluster_biom)        
         missing_otus = self.get_otu_misses(otu_misses)
         hits_dict = self.generate_hits_dict(otu_hits)
         filtered_table = self.generate_fixed_table(cluster_tsv, hits_dict, missing_otus)
@@ -249,9 +247,8 @@ class workflow_tools: # runs workflow on individual datasets
                 
 
     def generate_fixed_table(self, cluster_tsv, otu_hits_dict, otu_misses):
-        print(cluster_tsv)
         
-        cluster_df = pd.read_csv(cluster_tsv, sep='\t', index_col=[0], header=1)
+        cluster_df = pd.read_csv(cluster_tsv, sep='\t', index_col=[0])
         otu_cluster_names = cluster_df.index.tolist()
         cluster_df = cluster_df.drop(otu_misses)
         otu_hits_df = pd.DataFrame.from_dict(otu_hits_dict, orient='index', columns=['aligned_to'])
@@ -438,7 +435,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
         time_took = self.start_time - time.time()
         print(time_took)
     def chimera_removal_and_summarise(self):
-    
+        print("Running chimera removal.")
             
         chimera_output_directory = "%s/chimera_removal_directory" % self.dataset_path
         try:
@@ -486,6 +483,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
         except:
             print("clustering directory already exists.")
         otu_cluster_table,cluster_centroids = self.cluster_data(merged_fastq_path, cluster_directory)
+
         self.get_clustering_summary(cluster_centroids)
         return otu_cluster_table,cluster_centroids
 
@@ -503,6 +501,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
 
         otu_hits, otu_miss = self.align_data(clustered_fasta, alignment_directory)
         filtered_biom, missing_otus, filtered_table = self.create_hungate_summarised_table(clustered_biom, otu_hits, otu_miss)
+
         self.get_alignment_and_filter_summary(missing_otus, filtered_table)
 
 
