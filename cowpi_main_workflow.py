@@ -162,7 +162,6 @@ class workflow_tools: # runs workflow on individual datasets
         file_lines = []
 
         for file in fastq_paths:
-            print(file)
             with open(file, "r") as sequence_file:
                 sequence_list = sequence_file.readlines()
                 for sequence_line in sequence_list:
@@ -192,7 +191,6 @@ class workflow_tools: # runs workflow on individual datasets
 
         vsearch_align_args = ['vsearch', '-usearch_global', cluster_centroids, '-db', self.configuration_dict['16s_sequence_table'], '--id', '0.75', '-strand', 'both', '-userout',
         otu_hits_result, '-userfields', 'query+target', '-notmatched', otu_miss_result]
-        print(vsearch_align_args)
         subprocess.call(vsearch_align_args, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
 
         return otu_hits_result, otu_miss_result
@@ -227,7 +225,6 @@ class workflow_tools: # runs workflow on individual datasets
                     missing_otu = line.strip()[1:]
                     missing_otus.append(missing_otu)
 
-        print(missing_otus)
         return missing_otus
 
     def generate_hits_dict(self, hits_file):
@@ -235,9 +232,7 @@ class workflow_tools: # runs workflow on individual datasets
         with open(hits_file, "r") as f:
             hits_list = f.readlines()
             for hits in hits_list:
-                print(hits)
                 hit_opts = hits.split("\t")
-                print(hit_opts)
                 hit_otu = hit_opts[0]
                 aligned_otu = hit_opts[1].strip()
                 hits_dict[hit_otu] = aligned_otu
@@ -435,7 +430,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
         time_took = self.start_time - time.time()
         print(time_took)
     def chimera_removal_and_summarise(self):
-        print("Running chimera removal.")
+	print("running chimera removal.")
             
         chimera_output_directory = "%s/chimera_removal_directory" % self.dataset_path
         try:
@@ -461,6 +456,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
 
 
     def merge_fastqs_and_summarise(self, fastq_paths):
+	print("merging fastqs.")
         merged_fastq_directory = "%s/merged_fastq_directory" % self.dataset_path
         try:
             os.mkdir(merged_fastq_directory)
@@ -476,7 +472,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
 
 
     def cluster_and_summarise(self, merged_fastq_path):
-        
+        print("clustering sequences.")
         cluster_directory = "%s/clustering_directory" % self.dataset_path
         try:
             os.mkdir(cluster_directory)
@@ -489,7 +485,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
 
    
     def align_and_summarise(self, clustered_fasta, clustered_biom):
-
+	print("aligning otu clusters to rumen amplicons.")
         alignment_directory = "%s/alignment_directory" % self.dataset_path
         try:
             
@@ -501,7 +497,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
 
         otu_hits, otu_miss = self.align_data(clustered_fasta, alignment_directory)
         filtered_biom, missing_otus, filtered_table = self.create_hungate_summarised_table(clustered_biom, otu_hits, otu_miss)
-
+	print("Creating filtered data file based on otu alignment.")
         self.get_alignment_and_filter_summary(missing_otus, filtered_table)
 
 
@@ -510,13 +506,13 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
 
 
     def normalise_by_copy_number(self, filtered_biom):
-        
+        print("normalising by copy number.")
         normalised_biom = self.create_normalised_copy_number_table(filtered_biom)
 
         return normalised_biom
 
     def predict_and_categorise_metagenomes(self, normalised_biom):
-        
+        print("predicting and categorising metagenomes")
         metagenome_prediction_directory = "%s/metagenome_predictions" % self.dataset_path
         
         try:
@@ -547,6 +543,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
 
 
     def get_post_analysis_summary(self):
+	print("generating summary file")
         summary_output_file = "%s/summary_output_file.txt" % self.dataset_path
         output_ordered = ['Average_number_of_initial_reads', 'Average_percent_non_chimeras', 
         'Average_percent_chimeras', 'Number_of_reads_after_merging', 'OTU_clusters_found', 'Number_of_OTU_aligned', 'Unique_aligned_OTUs', 'Number_of_predicted_KOs', 'Pathways_at_lvl_1', 'Pathways_at_lvl_2', 'Pathways_at_lvl_3', 'Pathways_at_lvl_4']
@@ -555,7 +552,7 @@ class dataset(workflow_tools, summary_tools): # dataset object with fastq paths 
             for output_name in output_ordered:
                 
                 output_val = self.summary_outputs[output_name]
-                output_result = "%s\t%s" % (output_name, output_val)
+                output_result = "%s\t%s\n" % (output_name, output_val)
                 file.write(output_result)
 
 
