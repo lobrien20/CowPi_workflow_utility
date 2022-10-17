@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 import os
 def main():
@@ -10,7 +11,7 @@ def main():
     archaea_names = get_list_of_archaea_from_hungates(archaea_file_list)
 
     copy_num_file,ko_precalc_file,cowpi_fastas_file = get_specific_cowpi_files(cowpi_file_directory)
-
+    print("FOUND FILES")
     remove_archaea_from_copy_num_file(copy_num_file, archaea_names, archaea_removed_directory)
     remove_archaea_from_ko_precalcs(ko_precalc_file, archaea_names, archaea_removed_directory)
     remove_archaea_from_fas(cowpi_fastas_file, archaea_names, archaea_removed_directory)
@@ -39,11 +40,11 @@ def get_specific_cowpi_files(cowpi_file_directory):
             found += 1
         else:
             continue
-
     if found != 3:
-	print("Could not find cowpi files. Ensure copy number file, ko precalc file and cowpi fastas file in directory. Exiting.")
-	print(found)
+        print("Could not find cowpi files. Ensure copy number file, ko precalc file and cowpi fastas file in directory. Exiting.")
+        print(found)
         exit()
+
 
     return copy_num_file,ko_precalc_file,cowpi_fastas_file
     

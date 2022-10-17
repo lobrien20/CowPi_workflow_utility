@@ -1,0 +1,3 @@
+Dataset	Average_number_of_initial_reads	Average_percent_non_chimeras	Average_percent_chimeras	Number_of_reads_after_merging	OTU_clusters_found	Number_of_OTU_aligned	Unique_aligned_OTUs	Number_of_predicted_KOs	Pathways_at_lvl_1	Pathways_at_lvl_2	Pathways_at_lvl_3	Pathways_at_lvl_4
+test_data	250.0	100.0	0.0	2490	2150	2150	154	4585	9	39	254	0
+test_data_2	250.0	100.0	0.0	930	733	733	82	4585	9	39	254	0

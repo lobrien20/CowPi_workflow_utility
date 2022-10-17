@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import shutil, os
 from os import path
 import sys
@@ -58,9 +59,8 @@ def get_all_sequences(sequence_file_path):
 
 def generate_new_sequence_names(sequence_line_list, sequence_file_path):
     sequence_file_name = sequence_file_path.split("/")[-1][:-6]
-    sequence_file_list = sequence_file_name.split(".")
     sequence_file_name = sequence_file_name.replace("-", "_")
-    number_of_sequences = len(sequence_line_list)
+
     for sequence_chunk in sequence_line_list:
         sequence_name = "%s\n" % (sequence_file_name)
         sequence_chunk[0] = "@%s" % (sequence_name)
@@ -107,9 +107,9 @@ def get_directories(mega_directory):
     mega_directory_paths = os.listdir(mega_directory)
     fastq_directories_dict = {}
     for path in mega_directory_paths:
-        if os.path.isdir(f"{mega_directory}/{path}") == True:
+        if os.path.isdir("%s/%s" % (mega_directory, path)) == True:
 
-            fastq_paths = get_fastq_paths(f"{mega_directory}/{path}")
+            fastq_paths = get_fastq_paths("%s/%s" % (mega_directory, path))
 
 
             if len(fastq_paths) != 0:
