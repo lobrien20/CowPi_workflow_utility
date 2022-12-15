@@ -4,3 +4,6 @@ copy_number_table_file: "/home/leah/research_analysis/cowpi_testing/CowPI/CowPi_
 ko_table: "/home/leah/research_analysis/cowpi_testing/CowPI/CowPi_V1.0_ko_precalc1.tab"
 16s_sequence_table: "/home/leah/research_analysis/cowpi_testing/CowPI/CowPi_all_rumen_16s_combined_gap_rem.fas"
 threads: 6
+remove_chimeras: N
+skip_clustering: N
+

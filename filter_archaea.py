@@ -40,7 +40,8 @@ def get_specific_cowpi_files(cowpi_file_directory):
             found += 1
         else:
             continue
-    if found != 3:
+    if found < 3:
+        print(files)
         print("Could not find cowpi files. Ensure copy number file, ko precalc file and cowpi fastas file in directory. Exiting.")
         print(found)
         exit()

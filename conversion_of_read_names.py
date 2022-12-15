@@ -10,7 +10,7 @@ def main():
 
         fastq_directories_dict = get_directories(mega_directory)
         for directory,fastq_paths in fastq_directories_dict.items():
-            print("converting samples of directory: %s" % (directory))
+
             check_for_bad_fastq_names(fastq_paths)
             new_directory = "%s/%s" % (fixed_mega_directory, directory)
             os.mkdir(new_directory)
@@ -18,14 +18,18 @@ def main():
             for fastq in fastq_paths:
                 run_sequence_file_fix(initial_directory, new_directory, fastq)
 
-    else:
+    elif sys.argv[3] == "single":
         initial_directory = sys.argv[1]
         new_directory = sys.argv[2]
         os.mkdir(new_directory)
-        initial_directory = "%s/%s" % (mega_directory, directory)
-        result = check_for_bad_fastq_names(fastq_paths)
+
+        fastq_paths = get_fastq_paths(initial_directory)
+        check_for_bad_fastq_names(fastq_paths)
         for fastq in fastq_paths:
             run_sequence_file_fix(initial_directory, new_directory, fastq)
+
+    else:
+        print("please choose whether single or multiple datasets.")
 
 
 

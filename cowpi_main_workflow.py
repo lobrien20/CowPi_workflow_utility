@@ -30,22 +30,10 @@ class workflow_manager:
     # loads yaml file and converts it into one single dictionary with list of configurations unnested
     def get_configurations(self):
         with open(self.configuration_file_path, "r") as file:
-            yaml_dict = yaml.load(file, Loader=yaml.FullLoader)
-            config_dict = {}
-            list_of_dicts = [yaml_dict]
+            
+            config_dict = yaml.load(file, Loader=yaml.FullLoader)
 
-            for a_dict in list_of_dicts:
-                for key, value in a_dict.items():
-
-                    if isinstance(value, dict) == True:
-
-                        list_of_dicts.append(value)
-
-                    else:
-
-                        config_dict[key] = value
-
-        return config_dict
+            return config_dict
 
     def verify_mandatory_configurations(self):
         print("to do")
@@ -107,11 +95,18 @@ class multi_dataset_summariser:  # gathers information from datasets to produce 
     def create_success_file(self):
         all_output_dict = {}
         dataset_order_list = []
-        output_ordered = ['Average_number_of_initial_reads', 'Average_percent_non_chimeras', 'Average_percent_chimeras', 'Number_of_reads_after_merging', 'OTU_clusters_found', 'Number_of_OTU_aligned', 'Unique_aligned_OTUs', 'Number_of_predicted_KOs', 'Pathways_at_lvl_1', 'Pathways_at_lvl_2', 'Pathways_at_lvl_3', 'Pathways_at_lvl_4']
+        optional_outputs = ['Average_number_of_initial_reads', 'Average_percent_non_chimeras', 'Average_percent_chimeras', 'Number_of_reads_after_merging', 
+        'OTU_clusters_found']
+        output_ordered = ['Average_number_of_initial_reads', 'Average_percent_non_chimeras', 'Average_percent_chimeras', 'Number_of_reads_after_merging', 
+        'OTU_clusters_found', 'Number_of_OTU_aligned', 'Unique_aligned_OTUs', 'Number_of_predicted_KOs', 
+        'Pathways_at_lvl_1', 'Pathways_at_lvl_2', 'Pathways_at_lvl_3']
+        
         for dataset_name, dataset in self.multi_dataset_summariser.items():
             dataset_order_list.append(dataset_name)
             dataset_dict = dataset.summary_outputs
             for output_name in output_ordered:
+                if output_name in optional_outputs and output_name not in dataset_dict.keys():
+                    continue
                 
                 if output_name not in all_output_dict.keys():
                     all_output_dict[output_name] = [dataset_dict[output_name]]
@@ -360,9 +355,18 @@ class summary_tools:
             self.summary_outputs['OTU_clusters_found'] = num_of_clusters
 
     def get_alignment_and_filter_summary(self, missing_otus, filtered_table):
+        if self.configuration_dict['pre_clustered']:
+            
+            with open(self.configuration_dict['pre_clustered_files']["fastq_cluster_file_path"]) as f:
+                
+                num_of_clusters = (len(f.readlines()) - 2)
+        else:
+            num_of_clusters = self.summary_outputs['OTU_clusters_found']
 
-        self.summary_outputs['Number_of_OTU_aligned'] = self.summary_outputs['OTU_clusters_found'] - \
+        
+        self.summary_outputs['Number_of_OTU_aligned'] = num_of_clusters - \
             len(missing_otus)
+        
         self.summary_outputs['Unique_aligned_OTUs'] = len(
             filtered_table.index.tolist())
 
@@ -402,13 +406,29 @@ class dataset(workflow_tools, summary_tools):
         self.run_workflow()
 
     def run_workflow(self):
+        self.initial_fastq_paths = self.get_fastq_paths()
 
-        chimera_removed_fastq_paths = self.chimera_removal_and_summarise()
-        merged_fastq_path = self.merge_fastqs_and_summarise(
-            chimera_removed_fastq_paths)
-        cluster_table, cluster_centroids_path = self.cluster_and_summarise(
-            merged_fastq_path)
+        print(self.configuration_dict)
 
+        if self.configuration_dict['remove_chimeras']:
+            
+            fastq_paths = self.chimera_removal_and_summarise()
+        
+        else:
+            
+            fastq_paths = self.initial_fastq_paths
+
+        if 'pre_clustered_files' in self.configuration_dict.keys() and isinstance(self.configuration_dict['pre_clustered_files'], dict) == True:
+        #   no_clustering_info = self.configuration_dict['cluster?']
+            pre_cluster_file_dict = self.configuration_dict['pre_clustered_files']
+            cluster_centroids_path = pre_cluster_file_dict['fastq_cluster_file_path']
+            cluster_table = pre_cluster_file_dict['cluster_table_path']
+
+        else:
+
+            merged_fastq_path = self.merge_fastqs_and_summarise(fastq_paths)
+            cluster_table, cluster_centroids_path = self.cluster_and_summarise(merged_fastq_path)
+            
         filtered_biom = self.align_and_summarise(
             cluster_centroids_path, cluster_table)
 
@@ -538,7 +558,7 @@ class dataset(workflow_tools, summary_tools):
         except:
             print("categorised predictions dir already produced.")
 
-        ko_pathway_levels = ['1', '2', '3', '4']
+        ko_pathway_levels = ['1', '2', '3']
         for level in ko_pathway_levels:
 
             self.categorize_metagenomes(
@@ -550,15 +570,20 @@ class dataset(workflow_tools, summary_tools):
     def get_post_analysis_summary(self):
         print("generating summary file")
         summary_output_file = "%s/summary_output_file.txt" % self.dataset_path
+
+        
         output_ordered = ['Average_number_of_initial_reads', 'Average_percent_non_chimeras',
-                          'Average_percent_chimeras', 'Number_of_reads_after_merging', 'OTU_clusters_found', 'Number_of_OTU_aligned', 'Unique_aligned_OTUs', 'Number_of_predicted_KOs', 'Pathways_at_lvl_1', 'Pathways_at_lvl_2', 'Pathways_at_lvl_3', 'Pathways_at_lvl_4']
+                          'Average_percent_chimeras', 'Number_of_reads_after_merging', 'OTU_clusters_found', 
+                          'Number_of_OTU_aligned', 'Unique_aligned_OTUs', 'Number_of_predicted_KOs', 'Pathways_at_lvl_1', 'Pathways_at_lvl_2', 'Pathways_at_lvl_3']
+        
         with open(summary_output_file, "w") as file:
 
             for output_name in output_ordered:
+                if output_name in self.summary_outputs.keys():
 
-                output_val = self.summary_outputs[output_name]
-                output_result = "%s\t%s\n" % (output_name, output_val)
-                file.write(output_result)
+                    output_val = self.summary_outputs[output_name]
+                    output_result = "%s\t%s\n" % (output_name, output_val)
+                    file.write(output_result)
 
         print("dataset at %s complete.\nSummary file at %s\n" %
               (self.dataset_path, summary_output_file))

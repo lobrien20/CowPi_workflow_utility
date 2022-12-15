@@ -1,0 +1,10 @@
+copy_number_table_file: /home/leah/research_analysis/git_repos/temp3/cowpi_database_dir/CowPi_V1.0_16S_precalculated.tab
+ko_table: /home/leah/research_analysis/git_repos/temp3/cowpi_database_dir/CowPi_V1.0_ko_precalc1.tab
+16s_sequence_table: /home/leah/research_analysis/git_repos/temp3/cowpi_database_dir/CowPi_V1.0_all_rumen_16S_combined.fas
+single_or_multiple_datasets:
+directory_of_datasets:
+threads:
+remove_chimeras:
+pre_clustered: true
+  fastq_cluster_file_path:
+  cluster_table_path:

@@ -1,0 +1,12 @@
+Average_number_of_initial_reads	250.0
+Average_percent_non_chimeras	100.0
+Average_percent_chimeras	0.0
+Number_of_reads_after_merging	2490
+OTU_clusters_found	2137
+Number_of_OTU_aligned	2137
+Unique_aligned_OTUs	151
+Number_of_predicted_KOs	4585
+Pathways_at_lvl_1	9
+Pathways_at_lvl_2	39
+Pathways_at_lvl_3	254
+Pathways_at_lvl_4	0
