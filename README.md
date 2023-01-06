@@ -6,7 +6,7 @@ This can be run on multiple independent datasets (completely separate datasets, 
 
 To create conda environment to run this tool:
 
-conda create -n cowpi_workflow_env picrust biom-format vsearch pyyaml pandas
+conda create -n cowpi_workflow picrust=1.1.4 biom-format=2.1.7 vsearch=2.18.0 pyyaml=5.2 pandas=0.24.2 python=2.7.18
 Please note: Sometimes this may have issues with conda forge, removing the conda forge channel whilst producing this environment should fix this.
 
 Contains following scripts:

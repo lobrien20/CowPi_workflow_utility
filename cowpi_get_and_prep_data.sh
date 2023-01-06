@@ -19,7 +19,7 @@ for download in "${cowpi_download_array[@]}" # loops over link array, downloads 
 do
     download_name=$(echo "${download}" | awk -F'/' '{print $NF}' | sed 's/?download=1//')
     download_path="${cowpi_directory}/${download_name}"
-   # wget "${download}" -O "${download_path}"
+    wget "${download}" -O "${download_path}"
     gunzip "${download_path}"
 
 
@@ -43,7 +43,7 @@ then
 else
     yaml_pre_clust_configs_array=("copy_number_table_file: ${cowpi_directory}/CowPi_V1.0_16S_precalculated.tab" "ko_table: ${cowpi_directory}/CowPi_V1.0_ko_precalc1.tab" \
     "16s_sequence_table: ${cowpi_directory}/CowPi_V1.0_all_rumen_16S_combined.fas" "single_or_multiple_datasets:" "directory_of_datasets:" "threads:" "remove_chimeras:" "pre_clustered: true" \
-    "  fastq_cluster_file_path:" "  cluster_table_path:")
+    "pre_clustered_files:"  "  fastq_cluster_file_path:" "  cluster_table_path:")
 
     for config in "${yaml_pre_clust_configs_array[@]}"
     do

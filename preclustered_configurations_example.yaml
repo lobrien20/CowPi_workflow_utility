@@ -6,5 +6,6 @@ directory_of_datasets:
 threads:
 remove_chimeras:
 pre_clustered: true
+pre_clustered_files:
   fastq_cluster_file_path:
   cluster_table_path:

@@ -233,6 +233,19 @@ class workflow_tools:  # runs workflow on individual datasets
 
         cluster_df = pd.read_csv(cluster_tsv, sep='\t', index_col=[0])
         otu_cluster_names = cluster_df.index.tolist()
+
+        not_count = 0
+        okay_count = 0
+        for miss in otu_misses:
+            if miss not in otu_cluster_names:
+                not_count += 1
+            else:
+                okay_count += 1
+
+        print("okay count is %s" % (okay_count))
+        print("not count is %s" % (not_count))
+
+
         cluster_df = cluster_df.drop(otu_misses)
         otu_hits_df = pd.DataFrame.from_dict(
             otu_hits_dict, orient='index', columns=['aligned_to'])
