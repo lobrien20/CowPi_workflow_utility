@@ -11,12 +11,6 @@ conda create -n cowpi_workflow picrust=1.1.4 biom-format=2.1.7 vsearch=2.18.0 py
 Please note: Sometimes this may have issues with conda forge, removing the conda forge channel whilst producing this environment should fix this.
 
 
-To obtain a singularity image running this tool:
-
-singularity pull library://lobrien20/collection/cowpi_workflow_utility
-
-
-
 
 Contains following scripts:
 
